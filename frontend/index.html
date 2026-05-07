@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Segmentation - Machine Learning Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min"></script>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo">
+        <h1>🎯 SegmentAI</h1>
+        <p>ML Customer Segmentation</p>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-btn active" data-page="home">
+          <span class="icon">🏠</span> Dashboard
+        </button>
+        <button class="nav-btn" data-page="upload">
+          <span class="icon">📂</span> Upload Data
+        </button>
+        <button class="nav-btn" data-page="train">
+          <span class="icon">🤖</span> Train Model
+        </button>
+        <button class="nav-btn" data-page="analysis">
+          <span class="icon">📊</span> Analysis
+        </button>
+        <button class="nav-btn" data-page="predict">
+          <span class="icon">🔮</span> Predict
+        </button>
+        <button class="nav-btn" data-page="export">
+          <span class="icon">💾</span> Export
+        </button>
+      </nav>
+
+      <div class="theme-toggle">
+        <button id="dark-mode-btn" class="dark-mode-toggle">🌙 Dark Mode</button>
+      </div>
+
+      <div class="model-status">
+        <h3>Model Status</h3>
+        <div id="status-indicator" class="status-red">⚫ Not Ready</div>
+        <p id="status-info">No model trained</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Home Page -->
+      <section id="home" class="page active">
+        <div class="hero">
+          <h2>Welcome to Customer Segmentation Platform</h2>
+          <p>Advanced Machine Learning Dashboard for Customer Analytics</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>📊 Customers Analyzed</h3>
+            <p id="stat-customers">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>🎯 Segments Identified</h3>
+            <p id="stat-clusters">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>✨ Model Accuracy</h3>
+            <p id="stat-silhouette">0%</p>
+          </div>
+          <div class="stat-card">
+            <h3>💡 Insights Generated</h3>
+            <p id="stat-insights">0</p>
+          </div>
+        </div>
+
+        <div class="quick-start">
+          <h3>🚀 Quick Start</h3>
+          <ol>
+            <li>Upload your customer data (CSV file)</li>
+            <li>Let the system preprocess and analyze</li>
+            <li>Train the ML model with optimal K</li>
+            <li>Explore clusters and get insights</li>
+            <li>Export segmented data for actions</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- Upload Data Page -->
+      <section id="upload" class="page">
+        <h2>📂 Upload Customer Data</h2>
+
+        <div class="upload-section">
+          <div class="upload-area" id="upload-area">
+            <input type="file" id="file-input" accept=".csv" hidden>
+            <p>📁 Drag & Drop CSV here or click to browse</p>
+            <small>Supported format: CSV with Age, Income, Spending columns</small>
+          </div>
+          <button class="btn btn-primary" id="upload-btn">Upload File</button>
+        </div>
+
+        <div id="preview-section" style="display: none;">
+          <h3>Dataset Preview</h3>
+          <div id="data-stats" class="info-box"></div>
+          <div id="data-preview" class="table-container"></div>
+          <button class="btn btn-primary" id="preprocess-btn">🔧 Preprocess Data</button>
+        </div>
+
+        <div id="preprocessing-summary" style="display: none;">
+          <h3>Preprocessing Summary</h3>
+          <div id="preprocessing-details" class="info-box"></div>
+        </div>
+      </section>
+
+      <!-- Train Model Page -->
+      <section id="train" class="page">
+        <h2>🤖 Train ML Model</h2>
+
+        <div class="train-section">
+          <h3>Step 1: Find Optimal K (Elbow Method)</h3>
+          <button class="btn btn-primary" id="elbow-btn">Calculate Elbow</button>
+
+          <div id="elbow-chart-container" style="display: none; margin-top: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <canvas id="elbow-chart"></canvas>
+              </div>
+              <div>
+                <canvas id="silhouette-chart"></canvas>
+              </div>
+            </div>
+            <div id="elbow-info" class="info-box"></div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="train-section">
+          <h3>Step 2: Train KMeans Model</h3>
+          <div class="form-group">
+            <label for="k-value">Number of Clusters (K):</label>
+            <input type="number" id="k-value" min="2" max="10" value="3">
+            <small id="k-suggestion">Suggested: 3</small>
+          </div>
+          <button class="btn btn-primary" id="train-btn">🚀 Train Model</button>
+          <div id="training-status" class="loading" style="display: none;">
+            <p>Training in progress...</p>
+          </div>
+        </div>
+
+        <div id="training-results" style="display: none;">
+          <h3>✅ Training Complete</h3>
+          <div id="training-summary" class="info-box"></div>
+        </div>
+      </section>
+
+      <!-- Analysis Page -->
+      <section id="analysis" class="page">
+        <h2>📊 Cluster Analysis</h2>
+
+        <!-- Model Accuracy & Metrics -->
+        <div class="card full-width" style="margin-bottom: 20px;">
+          <h3>✨ Model Performance Metrics</h3>
+          <div id="accuracy-metrics"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div class="metric-box">
+              <p class="metric-label">Silhouette Score</p>
+              <p class="metric-value" id="metric-silhouette">-</p>
+              <small id="metric-silhouette-desc">Cluster separation quality</small>
+            </div>
+            <div class="metric-box">
+              <p class="metric-label">Model Inertia</p>
+              <p class="metric-value" id="metric-inertia">-</p>
+              <small id="metric-inertia-desc">Within-cluster variance</small>
+            </div>
+            <div class="metric-box">
+              <p class="metric-label">Clusters</p>
+              <p class="metric-value" id="metric-k">-</p>
+              <small id="metric-k-desc">Number of segments</small>
+            </div>
+            <div class="metric-box">
+              <p class="metric-label">Total Customers</p>
+              <p class="metric-value" id="metric-total">-</p>
+              <small id="metric-total-desc">Analyzed records</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Insights -->
+        <div class="card full-width" style="margin-bottom: 20px;">
+          <h3>💡 Key Business Insights</h3>
+          <div id="insights-container"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"></div>
+        </div>
+
+        <div class="analysis-grid">
+          <!-- Visualization -->
+          <div class="card">
+            <h3>Customer Segments (PCA Visualization)</h3>
+            <div id="pca-chart-container" style="width: 100%; height: 400px;"></div>
+          </div>
+
+          <!-- Cluster Profiles -->
+          <div class="card">
+            <h3>Cluster Profiles</h3>
+            <div id="profiles-container"></div>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="card">
+            <h3>Marketing Recommendations</h3>
+            <div id="recommendations-container"></div>
+          </div>
+
+          <!-- Cluster Distribution -->
+          <div class="card">
+            <h3>Cluster Distribution</h3>
+            <canvas id="distribution-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Detailed Report -->
+        <div class="card full-width">
+          <h3>📋 Detailed Cluster Report</h3>
+          <button class="btn btn-secondary" id="generate-report-btn">Generate Full Report</button>
+          <div id="report-container" style="margin-top: 20px; display: none;">
+            <div id="report-content"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Predict Page -->
+      <section id="predict" class="page">
+        <h2>🔮 Predict Customer Segment</h2>
+
+        <div class="card">
+          <h3>Enter Customer Information</h3>
+          <form id="predict-form">
+            <div class="form-group">
+              <label for="pred-age">Age:</label>
+              <input type="number" id="pred-age" min="18" max="100" value="35" required>
+            </div>
+            <div class="form-group">
+              <label for="pred-income">Annual Income ($):</label>
+              <input type="number" id="pred-income" min="0" value="50000" required>
+            </div>
+            <div class="form-group">
+              <label for="pred-spending">Annual Spending ($):</label>
+              <input type="number" id="pred-spending" min="0" value="5000" required>
+            </div>
+            <button type="submit" class="btn btn-primary">🎯 Predict Segment</button>
+          </form>
+        </div>
+
+        <div id="prediction-result" style="display: none;">
+          <div class="card">
+            <h3>✨ Prediction Result</h3>
+            <div id="prediction-details" class="info-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Export Page -->
+      <section id="export" class="page">
+        <h2>💾 Export & Download</h2>
+
+        <div class="card">
+          <h3>Export Options</h3>
+          <div class="export-options">
+            <button class="btn btn-primary" id="export-csv-btn">
+              📥 Download Segmented Data (CSV)
+            </button>
+            <button class="btn btn-primary" id="export-report-btn">
+              📄 Download Full Report (JSON)
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📊 Available Exports</h3>
+          <div id="export-info" class="info-box">
+            <p>Export functionality available after model training.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal for Messages -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3 id="modal-title"></h3>
+      <p id="modal-message"></p>
+      <button class="btn btn-primary" id="modal-btn">OK</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
